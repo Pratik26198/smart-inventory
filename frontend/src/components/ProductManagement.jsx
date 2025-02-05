@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 function ProductManagement() {
   const [products, setProducts] = useState([]);
@@ -84,65 +85,103 @@ function ProductManagement() {
 
   return (
     <div className="container">
-      <h2 className="mt-5">Product Management</h2>
+      <div className="card shadow p-3">
+        <h3 className="mb-3">
+          <FaPlus className="me-2" />
+          Product Management
+        </h3>
 
-      {/* Show product form only if Admin */}
-      {role === "admin" && (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label>Product Name:</label>
-            <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="mb-3">
-            <label>Description:</label>
-            <input type="text" className="form-control" value={description} onChange={(e) => setDescription(e.target.value)} required />
-          </div>
-          <div className="mb-3">
-            <label>Price:</label>
-            <input type="number" className="form-control" value={price} onChange={(e) => setPrice(e.target.value)} required />
-          </div>
-          <div className="mb-3">
-            <label>Stock:</label>
-            <input type="number" className="form-control" value={stock} onChange={(e) => setStock(e.target.value)} required />
-          </div>
-          <button type="submit" className="btn btn-primary">
-            {editingProduct ? "Update Product" : "Add Product"}
-          </button>
-        </form>
-      )}
+        {/* Show product form only if Admin */}
+        {role === "admin" && (
+          <form onSubmit={handleSubmit}>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label>Product Name:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label>Description:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label>Price:</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label>Stock:</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-success">
+              {editingProduct ? "Update Product" : "Add Product"}
+            </button>
+          </form>
+        )}
+      </div>
 
       {/* Product List */}
-      <table className="table mt-4">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Stock</th>
-            {role === "admin" && <th>Actions</th>} {/* Show actions only for admins */}
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.name}</td>
-              <td>{product.description}</td>
-              <td>${product.price}</td>
-              <td>{product.stock}</td>
-              {role === "admin" && (
-                <td>
-                  <button className="btn btn-warning me-2" onClick={() => handleEdit(product)}>
-                    Edit
-                  </button>
-                  <button className="btn btn-danger" onClick={() => handleDelete(product.id)}>
-                    Delete
-                  </button>
-                </td>
-              )}
+      <div className="card shadow p-3 mt-4">
+        <h3>Product List</h3>
+        <table className="table table-hover mt-3">
+          <thead className="table-dark">
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Stock</th>
+              {role === "admin" && <th>Actions</th>}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td>{product.name}</td>
+                <td>{product.description}</td>
+                <td>${product.price}</td>
+                <td>{product.stock}</td>
+                {role === "admin" && (
+                  <td>
+                    <button className="btn btn-warning me-2" onClick={() => handleEdit(product)}>
+                      <FaEdit className="me-1" /> Edit
+                    </button>
+                    <button className="btn btn-danger" onClick={() => handleDelete(product.id)}>
+                      <FaTrash className="me-1" /> Delete
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

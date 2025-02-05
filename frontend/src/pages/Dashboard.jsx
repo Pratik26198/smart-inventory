@@ -4,12 +4,30 @@ import axios from "axios";
 import ProductManagement from "../components/ProductManagement";
 import SalesReport from "../components/SalesReport";
 import SalesManagement from "../components/SalesManagement";
+import { FaMoon, FaSun, FaSignOutAlt } from "react-icons/fa";
 
 function Dashboard() {
   const [role, setRole] = useState(null);
   const [products, setProducts] = useState([]);
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  // Apply theme on load
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    const newTheme = !darkMode ? "dark" : "light";
+    setDarkMode(!darkMode);
+    localStorage.setItem("theme", newTheme);
+    document.body.classList.toggle("dark-mode");
+  };
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -45,47 +63,69 @@ function Dashboard() {
   }, [token, navigate]);
 
   return (
-    <div className="container">
-      <h2 className="mt-5">Dashboard</h2>
-      <button className="btn btn-danger mb-3" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>
-        Logout
-      </button>
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Dashboard</h2>
+
+        <div className="d-flex gap-3">
+          <button className="btn btn-secondary" onClick={toggleDarkMode}>
+            {darkMode ? <FaSun className="me-2" /> : <FaMoon className="me-2" />}
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </button>
+          
+          <button className="btn btn-danger" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>
+            <FaSignOutAlt className="me-2" /> Logout
+          </button>
+        </div>
+      </div>
 
       {role === "admin" ? (
         <>
-          <ProductManagement />
-          <SalesReport />
+          <div className="row">
+            <div className="col-md-6">
+              <ProductManagement />
+            </div>
+            <div className="col-md-6">
+              <SalesReport />
+            </div>
+          </div>
         </>
       ) : (
         <>
-          <SalesManagement products={products} setProducts={setProducts} />
-          <h3>Product List</h3>
-          <table className="table mt-4">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Stock</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <tr key={product.id}>
-                    <td>{product.name}</td>
-                    <td>{product.description}</td>
-                    <td>${product.price}</td>
-                    <td>{product.stock}</td>
+          <div className="row">
+            <div className="col-md-6">
+              <SalesManagement products={products} setProducts={setProducts} />
+            </div>
+            <div className="col-md-6">
+              <h3>Product List</h3>
+              <table className="table table-striped mt-3">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Stock</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4">No products available</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {products.length > 0 ? (
+                    products.map((product) => (
+                      <tr key={product.id}>
+                        <td>{product.name}</td>
+                        <td>{product.description}</td>
+                        <td>${product.price}</td>
+                        <td>{product.stock}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4">No products available</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
     </div>
