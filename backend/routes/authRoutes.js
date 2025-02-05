@@ -3,10 +3,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 const { Op } = require("sequelize"); // Import Sequelize operators
+const { verifyToken } = require("../middlewares/authMiddleware"); // Ensure this middleware is used
 
 const router = express.Router();
 
-// Register User (Admin Only)
+// ✅ Register User (Admin Only)
 router.post("/register", async (req, res) => {
   try {
     const { name, email, mobile, password, role } = req.body;
@@ -44,11 +45,12 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in /register:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Login User
+// ✅ Login User
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -56,25 +58,44 @@ router.post("/login", async (req, res) => {
     // Check if user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User not found!" });
+      return res.status(404).json({ message: "Invalid email or password!" }); // Avoid revealing user existence
     }
 
     // Compare hashed passwords
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ message: "Invalid password!" });
+      return res.status(401).json({ message: "Invalid email or password!" });
     }
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, role: user.role }, // FIX: Ensure correct ID is stored in the token
+      { id: user.id, role: user.role }, // Ensure correct ID is stored in the token
       process.env.JWT_SECRET || "your_jwt_secret_key",
       { expiresIn: "1h" }
     );
 
     res.json({ token, role: user.role });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in /login:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// ✅ Get Authenticated User Details (Fix for `/api/auth/me` Not Found)
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ["id", "name", "email", "role"],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error in /me:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
