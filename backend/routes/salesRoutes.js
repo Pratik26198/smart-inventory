@@ -1,10 +1,11 @@
 const express = require("express");
 const { Sale, Product } = require("../models");
+const { verifyToken } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Record a New Sale
-router.post("/", async (req, res) => {
+// Record a New Sale (Any Authenticated User)
+router.post("/", verifyToken, async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
@@ -29,9 +30,6 @@ router.post("/", async (req, res) => {
       totalPrice,
     });
 
-    // Ensure association exists
-    await sale.reload({ include: { model: Product, as: "product" } });
-
     // Update product stock
     await product.update({ stock: product.stock - quantity });
 
@@ -44,22 +42,27 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get All Sales Transactions
-router.get("/", async (req, res) => {
-    try {
-      const sales = await Sale.findAll({
-        include: [{ model: Product, as: "product" }], // Fix: Include alias explicitly
-      });
-      res.json(sales);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  });
-  
-
-// Generate Sales Report
-router.get("/report", async (req, res) => {
+// Get All Sales (Admin Only)
+router.get("/", verifyToken, async (req, res) => {
   try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    const sales = await Sale.findAll({ include: [{ model: Product, as: "product" }] });
+    res.json(sales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get Sales Report (Admin Only)
+router.get("/report", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
     const totalSales = await Sale.sum("totalPrice");
     const totalTransactions = await Sale.count();
 
