@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function SalesManagement() {
-  const [products, setProducts] = useState([]);
+function SalesManagement({ products, setProducts }) {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState("");
   const [message, setMessage] = useState("");
@@ -36,6 +35,15 @@ function SalesManagement() {
 
       setMessage(response.data.message);
       setQuantity(""); // Reset input field
+
+      // ✅ Update stock in UI instantly without requiring a page refresh
+      const updatedProduct = response.data.updatedProduct;
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.id === updatedProduct.id ? updatedProduct : product
+        )
+      );
+
     } catch (error) {
       setMessage("Error recording sale: " + error.response?.data?.message);
     }

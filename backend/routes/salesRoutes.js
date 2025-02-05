@@ -38,9 +38,13 @@ router.post("/", verifyToken, async (req, res) => {
     // Update product stock
     await product.update({ stock: product.stock - quantity });
 
+    // Return updated product stock
+    const updatedProduct = await Product.findByPk(productId);
+
     res.status(201).json({
       message: "Sale recorded successfully!",
       sale,
+      updatedProduct, // ✅ Sending updated stock to frontend
     });
   } catch (error) {
     console.error("Error recording sale:", error);
@@ -59,7 +63,7 @@ router.get("/", verifyToken, async (req, res) => {
       include: [
         {
           model: Product,
-          as: "product", // Ensure association is correct
+          as: "product",
           attributes: ["name", "price"],
         },
       ],
@@ -73,30 +77,25 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-// Get All Sales (Admin Only)
-router.get("/", verifyToken, async (req, res) => {
-    try {
-      if (req.user.role !== "admin") {
-        return res.status(403).json({ message: "Access denied. Admins only." });
-      }
-  
-      const sales = await Sale.findAll({
-        include: [
-          {
-            model: Product,
-            as: "product",
-            attributes: ["name", "price"],
-          },
-        ],
-        order: [["createdAt", "DESC"]], // Show latest sales first
-      });
-  
-      res.json(sales);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
-      res.status(500).json({ message: "Internal server error" });
+// ✅ Get Sales Report (Admin Only)
+router.get("/report", verifyToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
     }
-  });
-  
+
+    // Correctly calculate total sales revenue & transactions
+    const totalRevenue = await Sale.sum("totalPrice");
+    const totalTransactions = await Sale.count();
+
+    res.json({
+      totalRevenue: totalRevenue || 0, // Ensure it's not null
+      totalTransactions: totalTransactions || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching sales report:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 module.exports = router;

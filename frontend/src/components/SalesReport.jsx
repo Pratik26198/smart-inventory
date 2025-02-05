@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { CSVLink } from "react-csv"; // Import CSV Export Library
 
 function SalesReport() {
   const [report, setReport] = useState({ totalRevenue: 0, totalTransactions: 0 });
@@ -32,7 +33,7 @@ function SalesReport() {
 
     fetchSalesReport();
     fetchSales();
-  }, [token]);
+  }, [token, sales]);  // 🔥 FIX: Refresh report when sales update
 
   // Function to filter sales by time period
   const filterSales = () => {
@@ -45,6 +46,14 @@ function SalesReport() {
       return true;
     });
   };
+
+  // Prepare CSV data
+  const csvData = filterSales().map((sale) => ({
+    Date: new Date(sale.createdAt).toLocaleDateString(),
+    Product: sale.product ? sale.product.name : "Unknown Product",
+    Quantity: sale.quantity,
+    Total_Price: `$${sale.totalPrice}`,
+  }));
 
   return (
     <div className="container mt-5">
@@ -64,6 +73,11 @@ function SalesReport() {
           <option value="monthly">Monthly</option>
         </select>
       </div>
+
+      {/* CSV Download Button */}
+      <CSVLink data={csvData} filename={`sales_report_${filter}.csv`} className="btn btn-success mb-3">
+        Download as CSV
+      </CSVLink>
 
       <table className="table mt-3">
         <thead>
