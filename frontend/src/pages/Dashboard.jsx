@@ -4,6 +4,7 @@ import axios from "axios";
 import ProductManagement from "../components/ProductManagement";
 import SalesReport from "../components/SalesReport";
 import SalesManagement from "../components/SalesManagement";
+import Sidebar from "../components/Sidebar";
 import { FaMoon, FaSun, FaSignOutAlt } from "react-icons/fa";
 
 function Dashboard() {
@@ -13,7 +14,6 @@ function Dashboard() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Apply theme on load
   useEffect(() => {
     if (darkMode) {
       document.body.classList.add("dark-mode");
@@ -22,17 +22,10 @@ function Dashboard() {
     }
   }, [darkMode]);
 
-  const toggleDarkMode = () => {
-    const newTheme = !darkMode ? "dark" : "light";
-    setDarkMode(!darkMode);
-    localStorage.setItem("theme", newTheme);
-    document.body.classList.toggle("dark-mode");
-  };
-
   useEffect(() => {
     const fetchUserRole = async () => {
       if (!token) {
-        navigate("/login");
+        navigate("/");
         return;
       }
 
@@ -43,7 +36,7 @@ function Dashboard() {
         setRole(response.data.role);
       } catch (error) {
         console.error("Error fetching user role:", error);
-        navigate("/login");
+        navigate("/");
       }
     };
 
@@ -62,36 +55,69 @@ function Dashboard() {
     fetchProducts();
   }, [token, navigate]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dashboard</h2>
+    <div className="dashboard-container">
+      <Sidebar onLogout={handleLogout} />
 
-        <div className="d-flex gap-3">
-          <button className="btn btn-secondary" onClick={toggleDarkMode}>
-            {darkMode ? <FaSun className="me-2" /> : <FaMoon className="me-2" />}
-            {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
-          
-          <button className="btn btn-danger" onClick={() => { localStorage.removeItem("token"); navigate("/"); }}>
-            <FaSignOutAlt className="me-2" /> Logout
-          </button>
+      <div className="dashboard-content">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>Dashboard</h2>
+
+          <div className="d-flex gap-3">
+            <button className="btn btn-secondary" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <FaSun className="me-2" /> : <FaMoon className="me-2" />}
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+
+            <button className="btn btn-danger" onClick={handleLogout}>
+              <FaSignOutAlt className="me-2" /> Logout
+            </button>
+          </div>
         </div>
-      </div>
 
-      {role === "admin" ? (
-        <>
+        {role === "admin" ? (
           <div className="row">
-            <div className="col-md-6">
+            <div className="col-lg-6 col-md-12">
               <ProductManagement />
             </div>
-            <div className="col-md-6">
+            <div className="col-lg-6 col-md-12">
               <SalesReport />
             </div>
+            <div className="col-12">
+              <h3>Product List</h3>
+              <table className="table table-striped mt-3">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.name}</td>
+                      <td>{product.description}</td>
+                      <td>${product.price}</td>
+                      <td>{product.stock}</td>
+                      <td>
+                        <button className="btn btn-warning me-2">Edit</button>
+                        <button className="btn btn-danger">Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </>
-      ) : (
-        <>
+        ) : (
           <div className="row">
             <div className="col-md-6">
               <SalesManagement products={products} setProducts={setProducts} />
@@ -126,8 +152,8 @@ function Dashboard() {
               </table>
             </div>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
