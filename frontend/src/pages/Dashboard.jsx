@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ProductManagement from "../components/ProductManagement";
+import SalesReport from "../components/SalesReport"; // Import Sales Report Component
+import SalesManagement from "../components/SalesManagement"; // Import Sales Management for Staff
 
 function Dashboard() {
   const [role, setRole] = useState(null);
@@ -50,10 +52,14 @@ function Dashboard() {
       </button>
 
       {role === "admin" ? (
-        <ProductManagement />
+        <>
+          <ProductManagement />
+          <SalesReport /> {/* Show Sales Report for Admin */}
+        </>
       ) : (
         <>
-          <p>Welcome, Staff! You can view products but cannot edit them.</p>
+          <SalesManagement />
+          <h3>Product List</h3>
           <table className="table mt-4">
             <thead>
               <tr>

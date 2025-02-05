@@ -4,10 +4,15 @@ const { verifyToken } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Record a New Sale (Any Authenticated User)
+// ✅ Record a New Sale (Only Staff Users)
 router.post("/", verifyToken, async (req, res) => {
   try {
     const { productId, quantity } = req.body;
+
+    // Check if user is a staff member
+    if (req.user.role !== "staff") {
+      return res.status(403).json({ message: "Access denied. Only staff can record sales." });
+    }
 
     // Find the product
     const product = await Product.findByPk(productId);
@@ -38,41 +43,60 @@ router.post("/", verifyToken, async (req, res) => {
       sale,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error recording sale:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Get All Sales (Admin Only)
+// ✅ Get All Sales (Admin Only)
 router.get("/", verifyToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    const sales = await Sale.findAll({ include: [{ model: Product, as: "product" }] });
+    const sales = await Sale.findAll({
+      include: [
+        {
+          model: Product,
+          as: "product", // Ensure association is correct
+          attributes: ["name", "price"],
+        },
+      ],
+      order: [["createdAt", "DESC"]], // Show latest sales first
+    });
+
     res.json(sales);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching sales:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
-// Get Sales Report (Admin Only)
-router.get("/report", verifyToken, async (req, res) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+// Get All Sales (Admin Only)
+router.get("/", verifyToken, async (req, res) => {
+    try {
+      if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied. Admins only." });
+      }
+  
+      const sales = await Sale.findAll({
+        include: [
+          {
+            model: Product,
+            as: "product",
+            attributes: ["name", "price"],
+          },
+        ],
+        order: [["createdAt", "DESC"]], // Show latest sales first
+      });
+  
+      res.json(sales);
+    } catch (error) {
+      console.error("Error fetching sales:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    const totalSales = await Sale.sum("totalPrice");
-    const totalTransactions = await Sale.count();
-
-    res.json({
-      totalRevenue: totalSales || 0,
-      totalTransactions,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+  });
+  
 
 module.exports = router;
