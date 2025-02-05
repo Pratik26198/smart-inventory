@@ -31,3 +31,28 @@ body.dark-mode {
   background-color: #495057;
   color: #f8f9fa;
 }
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+  }
+
+  .btn {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .table {
+    font-size: 0.9rem;
+  }
+
+  .dashboard-layout {
+    display: flex;
+    flex-direction: column;
+  }
+}

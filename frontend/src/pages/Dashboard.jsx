@@ -73,7 +73,7 @@ function Dashboard() {
             {darkMode ? "Light Mode" : "Dark Mode"}
           </button>
           
-          <button className="btn btn-danger" onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>
+          <button className="btn btn-danger" onClick={() => { localStorage.removeItem("token"); navigate("/"); }}>
             <FaSignOutAlt className="me-2" /> Logout
           </button>
         </div>
