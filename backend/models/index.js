@@ -35,11 +35,19 @@ fs.readdirSync(__dirname)
     }
   });
 
+// Define model associations (if they exist)
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
+
+// Define associations manually for clarity
+db.Product = require("./product")(sequelize, Sequelize.DataTypes);
+db.Sale = require("./sale")(sequelize, Sequelize.DataTypes);
+
+db.Product.hasMany(db.Sale, { foreignKey: "productId", as: "sales" });
+db.Sale.belongsTo(db.Product, { foreignKey: "productId", as: "product" });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

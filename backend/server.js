@@ -24,3 +24,5 @@ app.use('/api/auth', authRoutes);
 const productRoutes = require("./routes/productRoutes");
 app.use("/api/products", productRoutes);
 
+const salesRoutes = require("./routes/salesRoutes"); // Import sales routes
+app.use("/api/sales", salesRoutes); // Register sales routes
