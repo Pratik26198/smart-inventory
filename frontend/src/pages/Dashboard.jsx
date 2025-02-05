@@ -10,7 +10,9 @@ import { FaMoon, FaSun, FaSignOutAlt } from "react-icons/fa";
 function Dashboard() {
   const [role, setRole] = useState(null);
   const [products, setProducts] = useState([]);
-  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
+  const [darkMode, setDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -32,28 +34,27 @@ function Dashboard() {
       }
     };
 
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/products", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProducts(response.data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
     fetchUserRole();
-    fetchProducts();
   }, [token, navigate]);
+
+  // ✅ Fix Dark Mode Toggle with Local Storage Persistence
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/"); // ✅ Ensures user is redirected to homepage
   };
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${darkMode ? "dark-mode" : ""}`}>
       <Sidebar onLogout={handleLogout} />
 
       <div className="dashboard-content">
@@ -61,7 +62,10 @@ function Dashboard() {
           <h2>Dashboard</h2>
 
           <div className="d-flex gap-3">
-            <button className="btn btn-secondary" onClick={() => setDarkMode(!darkMode)}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setDarkMode(!darkMode)}
+            >
               {darkMode ? <FaSun className="me-2" /> : <FaMoon className="me-2" />}
               {darkMode ? "Light Mode" : "Dark Mode"}
             </button>
@@ -73,7 +77,6 @@ function Dashboard() {
         </div>
 
         {role === "admin" ? (
-          // ✅ Admin sees ProductManagement & SalesReport, NO extra product list
           <div className="row">
             <div className="col-lg-6 col-md-12">
               <ProductManagement />
@@ -83,7 +86,6 @@ function Dashboard() {
             </div>
           </div>
         ) : (
-          // ✅ Staff sees SalesManagement & product list
           <div className="row">
             <div className="col-md-6">
               <SalesManagement products={products} setProducts={setProducts} />
