@@ -99,4 +99,14 @@ router.get("/me", verifyToken, async (req, res) => {
   }
 });
 
+// ✅ Logout (Optional: Implement Logout on Frontend by Removing Token)
+router.post("/logout", verifyToken, (req, res) => {
+  try {
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Error in /logout:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;

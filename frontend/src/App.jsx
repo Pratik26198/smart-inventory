@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
+import AuthPage from "./pages/AuthPage"; // Combined Login & Register
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -9,12 +9,16 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth" element={<AuthPage />} />
 
-        {/* Protected Routes */}
+        {/* Protected Routes (Only logged-in users can access) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>
+
+        {/* Redirect old login route to new auth page */}
+        <Route path="/login" element={<Navigate to="/auth" replace />} />
+
       </Routes>
     </Router>
   );

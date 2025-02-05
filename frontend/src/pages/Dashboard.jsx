@@ -15,20 +15,12 @@ function Dashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
+    if (!token) {
+      navigate("/");
+      return;
     }
-  }, [darkMode]);
 
-  useEffect(() => {
     const fetchUserRole = async () => {
-      if (!token) {
-        navigate("/");
-        return;
-      }
-
       try {
         const response = await axios.get("http://localhost:5000/api/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
@@ -81,6 +73,7 @@ function Dashboard() {
         </div>
 
         {role === "admin" ? (
+          // ✅ Admin sees ProductManagement & SalesReport, NO extra product list
           <div className="row">
             <div className="col-lg-6 col-md-12">
               <ProductManagement />
@@ -88,36 +81,9 @@ function Dashboard() {
             <div className="col-lg-6 col-md-12">
               <SalesReport />
             </div>
-            <div className="col-12">
-              <h3>Product List</h3>
-              <table className="table table-striped mt-3">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.name}</td>
-                      <td>{product.description}</td>
-                      <td>${product.price}</td>
-                      <td>{product.stock}</td>
-                      <td>
-                        <button className="btn btn-warning me-2">Edit</button>
-                        <button className="btn btn-danger">Delete</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         ) : (
+          // ✅ Staff sees SalesManagement & product list
           <div className="row">
             <div className="col-md-6">
               <SalesManagement products={products} setProducts={setProducts} />
